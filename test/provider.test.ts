@@ -84,6 +84,19 @@ test("provider groups graphemes into visible chunks at high speed", async () => 
   assert.deepEqual(deltas, ["abcd", "efgh", "ijkl", "mnop"]);
 });
 
+test("provider batches all tool-call arguments at high speed", async () => {
+  const args = { path: "abcdefghijklmnop.ts", encoding: "utf8" };
+  bind(message([{ type: "toolCall", id: "call", name: "read", arguments: args }]), 16);
+  const deltas: string[] = [];
+  for await (const event of streamReplayResponse(model, { messages: [] }, { sessionId: "temp" })) {
+    if (event.type === "toolcall_delta") deltas.push(event.delta);
+  }
+  const json = JSON.stringify(args);
+  assert.equal(deltas.join(""), json);
+  assert.ok(deltas.length < json.length);
+  assert.ok(deltas.every((delta) => delta.length > 1));
+});
+
 test("provider preserves block order including tool calls", async () => {
   bind(message([
     { type: "text", text: "A" },

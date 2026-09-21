@@ -74,7 +74,7 @@ pi install git:github.com/or-less/pi-replay
 - `--context`：只回放 Pi 当前压缩感知的有效上下文。
 - `--full`：显式选择完整历史；为兼容旧用法保留。
 - `--last N`：在所选范围内只回放最后 N 个用户轮次。
-- `--speed N`：设置流式速度，支持 `0.1` 到 `100`。0.1–4× 保持逐 grapheme；更高倍速会自适应合并多个 grapheme，让浏览器中也能明显体现加速。
+- `--speed N`：设置流式速度，支持 `0.1` 到 `100`。文本在 0.1–4× 保持逐 grapheme；更高倍速会合并多个 grapheme。工具参数（bash、read、edit 等）从 1× 以上就开始分块加速。
 - `--no-tools`：隐藏工具调用和结果。
 - `--thinking`：包含已保存的 thinking 内容。
 

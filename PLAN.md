@@ -1,7 +1,7 @@
 # Pi Replay 实施计划（原生会话回放方案）
 
-> 状态：0.2.5 原生 Provider/TUI 完成；Pi Web 0.9.1 改用手动新建/返回 session 的两步流程
-> 目标版本：0.2.5
+> 状态：0.2.6 原生 Provider/TUI 完成；Pi Web 0.9.1 改用手动新建/返回 session 的两步流程
+> 目标版本：0.2.6
 > 目标环境：Pi Web 0.9.1、Pi Coding Agent/TUI 0.85.1
 
 ## 1. 目标定义
@@ -134,6 +134,7 @@ Pi Web 会把数毫秒内的更新合并到同一浏览器帧。为让高倍速�
 - chunk 延迟按其中 grapheme 的基础延迟总和除以 speed 计算。
 - 每个 delta 后真实等待，不一次性同步 push。
 - 默认普通字符基础延迟 45ms。
+- 全部 tool call 参数 JSON（bash、read、edit、write 等）使用更快的分块：1× 仍逐 grapheme；更高倍速按 `max(8, speed * 2)` 合并，最多 80 个 grapheme。
 
 默认节奏：
 

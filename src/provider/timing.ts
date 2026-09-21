@@ -26,6 +26,25 @@ export function replayChunkSize(speed: number): number {
   return speed <= 4 ? 1 : Math.min(25, Math.ceil(speed / 4));
 }
 
+export function toolCallChunkSize(speed: number): number {
+  if (speed <= 1) return 1;
+  return Math.min(80, Math.max(8, Math.ceil(speed * 2)));
+}
+
+export function splitToolCallChunks(text: string, speed: number): ReplayChunk[] {
+  const graphemes = splitGraphemes(text);
+  const maxSize = toolCallChunkSize(speed);
+  const chunks: ReplayChunk[] = [];
+  for (let index = 0; index < graphemes.length; index += maxSize) {
+    const slice = graphemes.slice(index, index + maxSize);
+    chunks.push({
+      text: slice.join(""),
+      delayMs: Math.max(1, Math.round((slice.length * 12) / speed)),
+    });
+  }
+  return chunks;
+}
+
 export function splitReplayChunks(text: string, speed: number): ReplayChunk[] {
   const graphemes = splitGraphemes(text);
   const maxSize = replayChunkSize(speed);

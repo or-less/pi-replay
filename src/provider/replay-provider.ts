@@ -10,7 +10,7 @@ import {
 } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { findReplayScript, listReplayScripts } from "../registry.js";
-import { abortableDelay, splitGraphemes, splitReplayChunks } from "./timing.js";
+import { abortableDelay, splitReplayChunks, splitToolCallChunks } from "./timing.js";
 
 export const REPLAY_PROVIDER_ID = "pi-replay";
 export const REPLAY_MODEL_ID = "replay";
@@ -89,9 +89,9 @@ async function streamBlock(
   output.content.push(partialBlock);
   stream.push({ type: "toolcall_start", contentIndex, partial: output });
   const json = JSON.stringify(block.arguments);
-  for (const grapheme of splitGraphemes(json)) {
-    await abortableDelay(Math.max(1, Math.round(12 / speed)), signal);
-    stream.push({ type: "toolcall_delta", contentIndex, delta: grapheme, partial: output });
+  for (const chunk of splitToolCallChunks(json, speed)) {
+    await abortableDelay(chunk.delayMs, signal);
+    stream.push({ type: "toolcall_delta", contentIndex, delta: chunk.text, partial: output });
   }
   partialBlock.arguments = structuredClone(block.arguments);
   stream.push({
