@@ -73,6 +73,17 @@ test("provider emits one text delta per grapheme", async () => {
   assert.equal(events.at(-1)?.type, "done");
 });
 
+test("provider groups graphemes into visible chunks at high speed", async () => {
+  const text = "abcdefghijklmnop";
+  bind(message([{ type: "text", text }]), 16);
+  const deltas: string[] = [];
+  for await (const event of streamReplayResponse(model, { messages: [] }, { sessionId: "temp" })) {
+    if (event.type === "text_delta") deltas.push(event.delta);
+  }
+  assert.equal(deltas.join(""), text);
+  assert.deepEqual(deltas, ["abcd", "efgh", "ijkl", "mnop"]);
+});
+
 test("provider preserves block order including tool calls", async () => {
   bind(message([
     { type: "text", text: "A" },

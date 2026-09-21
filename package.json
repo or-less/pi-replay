@@ -1,6 +1,6 @@
 {
   "name": "pi-replay",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Native zero-cost session replay extension for Pi and Pi Web",
   "keywords": ["pi-package", "pi-extension", "replay"],
   "type": "module",

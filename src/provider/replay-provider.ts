@@ -10,7 +10,7 @@ import {
 } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { findReplayScript, listReplayScripts } from "../registry.js";
-import { abortableDelay, graphemeDelayMs, splitGraphemes } from "./timing.js";
+import { abortableDelay, splitGraphemes, splitReplayChunks } from "./timing.js";
 
 export const REPLAY_PROVIDER_ID = "pi-replay";
 export const REPLAY_MODEL_ID = "replay";
@@ -58,10 +58,10 @@ async function streamBlock(
     const partialBlock = { type: "text" as const, text: "" };
     output.content.push(partialBlock);
     stream.push({ type: "text_start", contentIndex, partial: output });
-    for (const grapheme of splitGraphemes(block.text)) {
-      await abortableDelay(graphemeDelayMs(grapheme, speed), signal);
-      partialBlock.text += grapheme;
-      stream.push({ type: "text_delta", contentIndex, delta: grapheme, partial: output });
+    for (const chunk of splitReplayChunks(block.text, speed)) {
+      await abortableDelay(chunk.delayMs, signal);
+      partialBlock.text += chunk.text;
+      stream.push({ type: "text_delta", contentIndex, delta: chunk.text, partial: output });
     }
     stream.push({ type: "text_end", contentIndex, content: block.text, partial: output });
     return;
@@ -71,10 +71,10 @@ async function streamBlock(
     const partialBlock = { type: "thinking" as const, thinking: "" };
     output.content.push(partialBlock);
     stream.push({ type: "thinking_start", contentIndex, partial: output });
-    for (const grapheme of splitGraphemes(block.thinking)) {
-      await abortableDelay(graphemeDelayMs(grapheme, speed), signal);
-      partialBlock.thinking += grapheme;
-      stream.push({ type: "thinking_delta", contentIndex, delta: grapheme, partial: output });
+    for (const chunk of splitReplayChunks(block.thinking, speed)) {
+      await abortableDelay(chunk.delayMs, signal);
+      partialBlock.thinking += chunk.text;
+      stream.push({ type: "thinking_delta", contentIndex, delta: chunk.text, partial: output });
     }
     stream.push({ type: "thinking_end", contentIndex, content: block.thinking, partial: output });
     return;

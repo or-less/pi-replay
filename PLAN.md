@@ -1,7 +1,7 @@
 # Pi Replay 实施计划（原生会话回放方案）
 
-> 状态：0.2.4 原生 Provider/TUI 完成；Pi Web 0.9.1 改用手动新建/返回 session 的两步流程
-> 目标版本：0.2.4
+> 状态：0.2.5 原生 Provider/TUI 完成；Pi Web 0.9.1 改用手动新建/返回 session 的两步流程
+> 目标版本：0.2.5
 > 目标环境：Pi Web 0.9.1、Pi Coding Agent/TUI 0.85.1
 
 ## 1. 目标定义
@@ -122,17 +122,18 @@ thinking_end
 
 错误或中止使用标准 `error` terminal event。
 
-### 4.2 真正逐字输出
+### 4.2 Grapheme 流式与高速分块
 
-旧版以多字符 chunk 模拟，Pi Web 可能将更新合并。新版要求：
+Pi Web 会把数毫秒内的更新合并到同一浏览器帧。为让高倍速仍有明显差异：
 
 - 使用 `Intl.Segmenter(..., { granularity: "grapheme" })`。
-- 每个 `text_delta` 只携带一个 grapheme。
-- 中文字符逐字输出。
-- emoji、ZWJ emoji、组合字符不会被拆坏。
-- 每次 delta 后真实等待，不一次性预生成后同步 push。
-- 默认基础延迟 45ms。
-- 标点和换行增加停顿。
+- 0.1–4× 时每个 `text_delta` 携带一个 grapheme，保持真正逐字输出。
+- 4×以上按 `ceil(speed / 4)` 合并 grapheme，最多每个 delta 25 个。
+- 句号、问号、感叹号和换行强制结束当前 chunk，保留自然停顿。
+- emoji、ZWJ emoji、组合字符永远不会被拆坏。
+- chunk 延迟按其中 grapheme 的基础延迟总和除以 speed 计算。
+- 每个 delta 后真实等待，不一次性同步 push。
+- 默认普通字符基础延迟 45ms。
 
 默认节奏：
 
@@ -547,12 +548,12 @@ src/replay/timeline.ts
 ### Phase C：本地 Provider ✅
 
 - 注册 `pi-replay/replay`。
-- 实现 grapheme 逐字 delta。
+- 实现低速逐 grapheme、高速自适应分块 delta。
 - 实现 thinking/tool call 标准事件。
 - 实现 AbortSignal。
 - usage/cost 归零。
 
-验收：直接消费 stream 时每个中文 grapheme 都对应独立 delta，且无网络访问。
+验收：低速下每个中文 grapheme 对应独立 delta；高速下 chunk 可无损拼回原文，且无网络访问。
 
 ### Phase D：Mock 工具 ✅
 
@@ -588,7 +589,7 @@ src/replay/timeline.ts
 ### 14.1 Provider 协议测试
 
 - start 必须最先出现。
-- 每个 text/thinking grapheme 单独 delta。
+- 低速下每个 text/thinking grapheme 单独 delta，高速下按预期分块。
 - block index 正确。
 - toolcall JSON delta 可拼回原参数。
 - done/error 顺序合法。
@@ -664,7 +665,7 @@ Pi TUI：
 - 回放正文完全不使用 Custom UI 绘制。
 - 回放从新的空白临时 session 开始。
 - Pi Web/TUI 都通过原生 message/tool event 渲染。
-- 中文和 emoji 按 grapheme 逐字输出。
+- 中文和 emoji 不被拆坏；低速逐 grapheme、高速自适应分块输出。
 - 历史工具只执行 mock，原生工具卡片正常显示。
 - 原 session 文件 hash、entries、leaf 均不变化。
 - 退出后恢复原 session。

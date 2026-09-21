@@ -1,3 +1,8 @@
+export interface ReplayChunk {
+  text: string;
+  delayMs: number;
+}
+
 export function splitGraphemes(text: string): string[] {
   if (typeof Intl.Segmenter === "function") {
     const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
@@ -6,12 +11,45 @@ export function splitGraphemes(text: string): string[] {
   return Array.from(text);
 }
 
+function baseGraphemeDelayMs(grapheme: string): number {
+  if (grapheme === "\n") return 120;
+  if (/[。！？.!?]/u.test(grapheme)) return 180;
+  if (/[,，、;；]/u.test(grapheme)) return 90;
+  return 45;
+}
+
 export function graphemeDelayMs(grapheme: string, speed: number): number {
-  let base = 45;
-  if (grapheme === "\n") base = 120;
-  else if (/[。！？.!?]/u.test(grapheme)) base = 180;
-  else if (/[,，、;；]/u.test(grapheme)) base = 90;
-  return Math.max(1, Math.round(base / speed));
+  return Math.max(1, Math.round(baseGraphemeDelayMs(grapheme) / speed));
+}
+
+export function replayChunkSize(speed: number): number {
+  return speed <= 4 ? 1 : Math.min(25, Math.ceil(speed / 4));
+}
+
+export function splitReplayChunks(text: string, speed: number): ReplayChunk[] {
+  const graphemes = splitGraphemes(text);
+  const maxSize = replayChunkSize(speed);
+  const chunks: ReplayChunk[] = [];
+  let current: string[] = [];
+  let baseDelay = 0;
+
+  const flush = () => {
+    if (current.length === 0) return;
+    chunks.push({
+      text: current.join(""),
+      delayMs: Math.max(1, Math.round(baseDelay / speed)),
+    });
+    current = [];
+    baseDelay = 0;
+  };
+
+  for (const grapheme of graphemes) {
+    current.push(grapheme);
+    baseDelay += baseGraphemeDelayMs(grapheme);
+    if (current.length >= maxSize || grapheme === "\n" || /[。！？.!?]/u.test(grapheme)) flush();
+  }
+  flush();
+  return chunks;
 }
 
 export function abortableDelay(ms: number, signal?: AbortSignal): Promise<void> {

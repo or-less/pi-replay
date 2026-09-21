@@ -74,7 +74,7 @@ pi install git:github.com/or-less/pi-replay
 - `--context`：只回放 Pi 当前压缩感知的有效上下文。
 - `--full`：显式选择完整历史；为兼容旧用法保留。
 - `--last N`：在所选范围内只回放最后 N 个用户轮次。
-- `--speed N`：设置逐字速度，支持 `0.1` 到 `100` 的任意数字，例如 `3`、`8`、`16`、`32`。
+- `--speed N`：设置流式速度，支持 `0.1` 到 `100`。0.1–4× 保持逐 grapheme；更高倍速会自适应合并多个 grapheme，让浏览器中也能明显体现加速。
 - `--no-tools`：隐藏工具调用和结果。
 - `--thinking`：包含已保存的 thinking 内容。
 
@@ -110,7 +110,7 @@ Pi Web 0.9.1 明确禁止扩展调用 `ctx.newSession()` 和 `ctx.switchSession(
 
 ## 已知限制
 
-- Session 没有 token 到达时间，因此逐字间隔是确定性的模拟值。
+- Session 没有 token 到达时间，因此流式间隔是确定性的模拟值；高倍速会以 grapheme chunk 显示，而非复刻原始 token 分块。
 - 历史工具通常只保存最终结果，无法复刻原始工具输出增量。
 - 回放脚本保存在当前 Pi 进程内；在执行 `/replay-start` 前重启 Pi Web 会丢失已准备的脚本。
 - Pi Web 0.9.1 不开放扩展驱动的 session 切换，所以 Web 端需要手动新建和返回 session；终端版仍为自动切换。
