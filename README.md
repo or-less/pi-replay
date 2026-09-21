@@ -61,7 +61,7 @@ pi install git:github.com/or-less/pi-replay
 
 ```text
 /replay
-/replay --full
+/replay --context
 /replay --last 3
 /replay --speed 16
 /replay --no-tools
@@ -70,8 +70,10 @@ pi install git:github.com/or-less/pi-replay
 
 参数：
 
-- `--full`：回放当前活动分支的完整历史，而非压缩感知的有效上下文。
-- `--last N`：只回放最后 N 个用户轮次。
+- 默认：回放当前活动分支的完整历史，包括压缩前仍保留在分支中的消息。
+- `--context`：只回放 Pi 当前压缩感知的有效上下文。
+- `--full`：显式选择完整历史；为兼容旧用法保留。
+- `--last N`：在所选范围内只回放最后 N 个用户轮次。
 - `--speed N`：设置逐字速度，支持 `0.1` 到 `100` 的任意数字，例如 `3`、`8`、`16`、`32`。
 - `--no-tools`：隐藏工具调用和结果。
 - `--thinking`：包含已保存的 thinking 内容。

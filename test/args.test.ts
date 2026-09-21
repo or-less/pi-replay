@@ -2,6 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { parseReplayArgs } from "../src/args.js";
 
+test("defaults to the complete active branch", () => {
+  assert.equal(parseReplayArgs("").full, true);
+  assert.equal(parseReplayArgs("--context").full, false);
+  assert.equal(parseReplayArgs("--context --full").full, true);
+});
+
 test("parses replay options", () => {
   assert.deepEqual(parseReplayArgs("--full --last 3 --speed 2 --no-tools --thinking"), {
     full: true,

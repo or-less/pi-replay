@@ -26,7 +26,7 @@ test("falls back to the persisted branch when effective context has no user turn
     },
   } as unknown as ExtensionCommandContext;
 
-  const snapshot = captureReplaySnapshot(ctx, DEFAULT_REPLAY_OPTIONS);
+  const snapshot = captureReplaySnapshot(ctx, { ...DEFAULT_REPLAY_OPTIONS, full: false });
   assert.equal(snapshot.source.mode, "full-branch");
   assert.equal(snapshot.turns.length, 1);
   assert.equal(snapshot.turns[0]?.preview, "hello");

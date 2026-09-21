@@ -1,7 +1,7 @@
 # Pi Replay 实施计划（原生会话回放方案）
 
-> 状态：0.2.3 原生 Provider/TUI 完成；Pi Web 0.9.1 改用手动新建/返回 session 的两步流程
-> 目标版本：0.2.3
+> 状态：0.2.4 原生 Provider/TUI 完成；Pi Web 0.9.1 改用手动新建/返回 session 的两步流程
+> 目标版本：0.2.4
 > 目标环境：Pi Web 0.9.1、Pi Coding Agent/TUI 0.85.1
 
 ## 1. 目标定义
@@ -413,6 +413,7 @@ await replayCtx.switchSession(originalSessionFile, {
 
 ```text
 /replay
+/replay --context
 /replay --full
 /replay --last N
 /replay --speed N  # 0.1–100 的任意数字
@@ -422,9 +423,10 @@ await replayCtx.switchSession(originalSessionFile, {
 
 语义：
 
-- `/replay`：当前活动分支的原始对话路径。
-- `--full`：包括压缩前仍在分支上的完整消息。
-- `--last N`：最后 N 个用户轮次。
+- `/replay`：默认回放当前活动分支的完整原始对话路径，包括压缩前消息。
+- `--context`：只使用压缩感知的当前有效上下文。
+- `--full`：显式选择完整历史，为兼容旧用法保留。
+- `--last N`：在所选范围内保留最后 N 个用户轮次。
 - `--speed`：原生 provider 的逐字速度，接受 0.1–100 的任意有限数字。
 - `--no-tools`：不生成 tool call；对应历史工具阶段使用简短跳过策略。
 - `--thinking`：回放 thinking block。

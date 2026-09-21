@@ -1,7 +1,7 @@
 import type { ReplayOptions, ReplaySpeed } from "./types.js";
 
 export const DEFAULT_REPLAY_OPTIONS: ReplayOptions = {
-  full: false,
+  full: true,
   speed: 1,
   showTools: true,
   showThinking: false,
@@ -19,6 +19,9 @@ export function parseReplayArgs(input: string): ReplayOptions {
     switch (token) {
       case "--full":
         options.full = true;
+        break;
+      case "--context":
+        options.full = false;
         break;
       case "--no-tools":
         options.showTools = false;
